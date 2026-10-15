@@ -162,13 +162,28 @@ a { color: inherit; }
 .screen {
   position: absolute; inset: calc(var(--u) * 9px); bottom: 0; overflow: hidden;
   border-radius: calc(var(--u) * 15px) calc(var(--u) * 15px) 0 0;
-  /* wallpaper: gelap & tenang, warna maskot samar supaya notch tetap pusat perhatian */
-  background:
-    radial-gradient(60% 55% at 22% 105%, rgba(25,184,255,.28), transparent 70%),
-    radial-gradient(55% 50% at 78% 108%, rgba(123,75,255,.30), transparent 70%),
-    radial-gradient(40% 35% at 50% 0%, rgba(45,91,255,.10), transparent 70%),
-    linear-gradient(180deg, #0d1322, #080b15 60%);
+  background: #1b2a6b; /* cadangan sebelum wallpaper tergambar */
 }
+
+/* Wallpaper: "bunga" cahaya berwarna maskot di atas langit terang, mirip wallpaper Windows 11.
+   Bagian atas sengaja terang supaya notch hitam tampak menonjol. Gambar statis = ringan. */
+.wall {
+  position: absolute; left: 0; right: 0; top: 0; height: calc(var(--u) * 320px); overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 50% -12%, #ffffff 0%, rgba(255,255,255,.65) 30%, transparent 62%),
+    linear-gradient(180deg, #dbe7ff 0%, #b7cdff 30%, #7e95ff 62%, #4b3fd0 100%);
+}
+.petal {
+  position: absolute; left: 50%; top: calc(var(--u) * 430px);
+  width: calc(var(--u) * 175px); height: calc(var(--u) * 420px); margin-left: calc(var(--u) * -87.5px);
+  transform-origin: 50% 0; transform: rotate(calc(var(--r) + 180deg));
+  border-radius: 50% 50% 46% 46% / 64% 64% 36% 36%;
+  background: linear-gradient(0deg, rgba(123,75,255,.95) 0%, rgba(45,91,255,.92) 38%, rgba(25,184,255,.88) 72%, rgba(210,240,255,.95) 100%);
+  box-shadow: inset 0 calc(var(--u) * -18px) calc(var(--u) * 40px) rgba(255,255,255,.35), 0 0 calc(var(--u) * 30px) rgba(40,60,200,.25);
+  opacity: .9;
+}
+.petal.back { width: calc(var(--u) * 260px); margin-left: calc(var(--u) * -130px); height: calc(var(--u) * 380px); opacity: .5; filter: blur(calc(var(--u) * 3px)); }
+.wall .shine { position: absolute; inset: 0; background: radial-gradient(45% 40% at 50% 30%, rgba(255,255,255,.35), transparent 70%); mix-blend-mode: soft-light; }
 
 /* ===== Notch tiruan (ukuran dalam dp, diskalakan --u) ================================== */
 .mn-holder { position: absolute; top: 0; left: 50%; transform: translateX(-50%) scale(var(--u)); transform-origin: top center; }
@@ -438,6 +453,16 @@ footer a:hover { color: var(--ink); }
     <div class="laptop" id="laptop">
       <div class="lid"><div class="bezel"><span class="cam"></span>
         <div class="screen">
+          <div class="wall" aria-hidden="true">
+            <i class="petal back" style="--r:-76deg"></i><i class="petal back" style="--r:76deg"></i>
+            <i class="petal back" style="--r:-48deg"></i><i class="petal back" style="--r:48deg"></i>
+            <i class="petal back" style="--r:-22deg"></i><i class="petal back" style="--r:22deg"></i>
+            <i class="petal" style="--r:-60deg"></i><i class="petal" style="--r:60deg"></i>
+            <i class="petal" style="--r:-36deg"></i><i class="petal" style="--r:36deg"></i>
+            <i class="petal" style="--r:-14deg"></i><i class="petal" style="--r:14deg"></i>
+            <i class="petal" style="--r:0deg"></i>
+            <span class="shine"></span>
+          </div>
           <div class="ghost" id="ghost" aria-hidden="true"><span class="g-thumb"></span><svg class="g-cur" viewBox="0 0 15 22"><path d="M1 1v17l4.4-4.2 3 6.8 3-1.3-3-6.6H14z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="g-badge">+ Copy</span></div>
           <div class="mn-holder">
             <div class="mn" id="mn" data-s="pet" role="img" aria-label="Nusa notch preview">
