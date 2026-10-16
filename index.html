@@ -338,6 +338,11 @@ svg.ctl { width: 17px; height: 17px; fill: #fff; } /* tombol prev / play / next 
 .ghost.in { opacity: 1; }
 .ghost.drop { opacity: 0; transform: scale(.4); }
 
+/* Shelf: cahaya gradasi maskot di dalam notch saat file melayang / dilepas */
+.sh-amb { opacity: 0; transition: opacity .7s ease; background: linear-gradient(90deg, #19b8ff, #2d5bff 50%, #7b4bff) !important; height: 85% !important; }
+.mn-holder.near .sh-amb { opacity: .45; }
+.mn-holder.swell .sh-amb { opacity: .8; transition: opacity .45s ease; }
+
 /* Tombol pratinjau */
 .try { margin-top: 26px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .try button {
@@ -464,7 +469,7 @@ footer a:hover { color: var(--ink); }
             <span class="shine"></span>
           </div>
           <div class="ghost" id="ghost" aria-hidden="true"><span class="g-thumb"></span><svg class="g-cur" viewBox="0 0 15 22"><path d="M1 1v17l4.4-4.2 3 6.8 3-1.3-3-6.6H14z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="g-badge">+ Copy</span></div>
-          <div class="mn-holder">
+          <div class="mn-holder" id="mnHolder">
             <div class="mn" id="mn" data-s="pet" role="img" aria-label="Nusa notch preview">
 
               <!-- Istirahat: maskot -->
@@ -568,6 +573,7 @@ footer a:hover { color: var(--ink); }
 
               <!-- Shelf -->
               <div class="ly l-shelf" id="shelf">
+                <div class="ambient sh-amb"></div>
                 <span class="a ttl vc">Shelf</span>
                 <span class="a sh-clear vc">Clear</span>
                 <span class="a arw c" style="left:22px;top:70px"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
@@ -821,7 +827,7 @@ function show(s) {
   mn.dataset.s = s;
   if (s === "water" && prev !== "water") setTimeout(waterGrow, 220);
   if (s === "shelf" && prev !== "shelf") shelfDemo();
-  if (s !== "shelf") { shelfRun++; ghost.className = "ghost"; }
+  if (s !== "shelf") { shelfRun++; ghost.className = "ghost"; holder.classList.remove("near", "swell"); }
   cap.textContent = captions[s];
   btns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === s)));
 }
@@ -831,6 +837,7 @@ btns.forEach(b => b.addEventListener("click", () => show(b.dataset.s)));
 const shelf = document.getElementById("shelf");
 const cards = shelf.querySelectorAll(".sh-card");
 const ghost = document.getElementById("ghost");
+const holder = document.getElementById("mnHolder");
 const gThumb = ghost.querySelector(".g-thumb");
 const IMG = '<span class="t-img" style="display:block;width:100%;height:100%"></span>';
 const FOLDER = cards[1].querySelector("svg").outerHTML;
@@ -849,9 +856,11 @@ async function shelfDemo() {
     await wait(250); if (!alive()) return false;
     ghost.style.left = "50%"; ghost.style.top = (62 * u) + "px";           // menuju notch
     await wait(800); if (!alive()) return false;
-    shelf.classList.add("hover");                                          // zona menyala
+    shelf.classList.add("hover"); holder.classList.add("near");           // zona & cahaya maskot menyala
     await wait(900); if (!alive()) return false;
     ghost.classList.add("drop"); shelf.classList.remove("hover");          // dilepas
+    holder.classList.remove("near"); holder.classList.add("swell");       // cahaya mengembang sekali
+    setTimeout(() => holder.classList.remove("swell"), 550);              // lalu memudar pelan
     card.classList.add("in"); shelf.classList.add("has");
     await wait(400);
     return alive();
