@@ -189,7 +189,7 @@ a { color: inherit; }
 .mn-holder { position: absolute; top: 0; left: 50%; transform: translateX(-50%) scale(var(--u)); transform-origin: top center; }
 .mn {
   --w: 150px; --h: 30px; --r: 14px; --e: 10px;
-  position: relative; width: var(--w); height: var(--h);
+  position: relative; width: var(--w); height: var(--h); transform-origin: 50% 0;
   background: #000; border-radius: 0 0 var(--r) var(--r);
   transition: width .62s var(--spring), height .62s var(--spring), border-radius .45s ease;
   font-family: var(--ui); color: #fff; font-size: 13px; line-height: 1;
@@ -573,7 +573,7 @@ footer a:hover { color: var(--ink); }
 
               <!-- Shelf -->
               <div class="ly l-shelf" id="shelf">
-                <div class="ambient sh-amb"></div>
+                <canvas class="a" id="shCv" width="840" height="280" style="left:0;top:0;width:420px;height:140px" aria-hidden="true"></canvas>
                 <span class="a ttl vc">Shelf</span>
                 <span class="a sh-clear vc">Clear</span>
                 <span class="a arw c" style="left:22px;top:70px"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
@@ -827,7 +827,7 @@ function show(s) {
   mn.dataset.s = s;
   if (s === "water" && prev !== "water") setTimeout(waterGrow, 220);
   if (s === "shelf" && prev !== "shelf") shelfDemo();
-  if (s !== "shelf") { shelfRun++; ghost.className = "ghost"; holder.classList.remove("near", "swell"); }
+  if (s !== "shelf") { shelfRun++; ghost.className = "ghost"; shStop(); }
   cap.textContent = captions[s];
   btns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === s)));
 }
@@ -856,11 +856,10 @@ async function shelfDemo() {
     await wait(250); if (!alive()) return false;
     ghost.style.left = "50%"; ghost.style.top = (62 * u) + "px";           // menuju notch
     await wait(800); if (!alive()) return false;
-    shelf.classList.add("hover"); holder.classList.add("near");           // zona & cahaya maskot menyala
+    shelf.classList.add("hover"); shSetHot(true);                          // zona & cahaya maskot menyala
     await wait(900); if (!alive()) return false;
     ghost.classList.add("drop"); shelf.classList.remove("hover");          // dilepas
-    holder.classList.remove("near"); holder.classList.add("swell");       // cahaya mengembang sekali
-    setTimeout(() => holder.classList.remove("swell"), 550);              // lalu memudar pelan
+    shDropNow();                                                           // cahaya naik + "tegukan" notch
     card.classList.add("in"); shelf.classList.add("has");
     await wait(400);
     return alive();
@@ -874,6 +873,54 @@ async function shelfDemo() {
   await wait(3200); if (!alive()) return;
   shelfDemo(); // ulangi
 }
+
+// ---- Shelf: cahaya maskot "Island gulp" (sama dengan aplikasi) ----------------------------------
+const shCv = document.getElementById("shCv"), sc = shCv.getContext("2d");
+const PAL = [[40, 170, 240], [52, 104, 236], [104, 78, 222]];
+const SH_SPEED = 0.7;
+let shHov = 0, shHv = 0, shDropT = -1, shDx = 210, shCx = 210, shG = 0, shGv = 0, shHot = false, shLast = 0, shRaf = 0;
+const shCl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const shSm = x => { x = shCl(x); return x * x * (3 - 2 * x); };
+function shMix(u) { u = shCl(u); const [a, b, k] = u < .5 ? [PAL[0], PAL[1], u * 2] : [PAL[1], PAL[2], (u - .5) * 2]; return a.map((v, i) => Math.round(v + (b[i] - v) * k)); }
+const shRgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+function shDraw() {
+  const W = 420, H = 140, c = sc;
+  c.setTransform(2, 0, 0, 2, 0, 0); c.clearRect(0, 0, W, H);
+  const d = shDropT, rise = d >= 0 && d < 1.1 ? Math.sin(shSm(d / 1.1) * Math.PI) : 0;
+  const fade = d >= 0 ? (d < .9 ? 1 : 1 - shSm((d - .9) / 1.1)) : 1;
+  const base = (.26 * shHov + .34 * rise) * fade, pool = (.42 * shHov + .28 * rise) * fade;
+  if (base > .004) { const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, shRgba(PAL[0], base)); g.addColorStop(.5, shRgba(PAL[1], base)); g.addColorStop(1, shRgba(PAL[2], base)); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  const px = d >= 0 ? shDx : shCx;
+  if (pool > .004) { const col = shMix(px / W), R = 170 + 60 * rise, g = c.createRadialGradient(px, H + 18, 0, px, H + 18, R);
+    g.addColorStop(0, shRgba(col.map(v => Math.min(255, v + 51)), pool)); g.addColorStop(.55, shRgba(col, pool * .45)); g.addColorStop(1, shRgba(col, 0)); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  if (d >= 0 && d < 1.4) { const q = 1 - Math.pow(1 - d / 1.4, 3), r = 24 + 430 * q, w = 30, a = .22 * (1 - q);
+    const g = c.createRadialGradient(px, H - 14, Math.max(0, r - w), px, H - 14, r + w);
+    g.addColorStop(0, "rgba(200,236,255,0)"); g.addColorStop(.5, `rgba(200,236,255,${a})`); g.addColorStop(1, "rgba(200,236,255,0)"); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  // cahaya memudar ke atas; sepertiga atas tetap gelap supaya teks terbaca
+  c.globalCompositeOperation = "destination-in";
+  const m = c.createLinearGradient(0, H, 0, 0); m.addColorStop(0, "#000"); m.addColorStop(.42, "rgba(0,0,0,.55)"); m.addColorStop(.78, "rgba(0,0,0,.08)"); m.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = m; c.fillRect(0, 0, W, H); c.globalCompositeOperation = "source-over";
+}
+function shFrame(now) {
+  const dt = Math.min(.05, (now - shLast) / 1000); shLast = now;
+  // posisi kursor (file yang diseret) di dalam notch, dalam dp
+  if (ghost.classList.contains("in") && !ghost.classList.contains("drop")) {
+    const g = ghost.getBoundingClientRect(), n = mn.getBoundingClientRect();
+    shCx = shCl((g.left - n.left) / (n.width / 420), 0, 420);
+  }
+  shHv += (50 * ((shHot ? 1 : 0) - shHov) - 14 * shHv) * dt; shHov = shCl(shHov + shHv * dt, 0, 1.04);
+  shGv += (-60 * shG - 6 * shGv) * dt; shG += shGv * dt;
+  if (shDropT >= 0) { shDropT += dt * SH_SPEED; if (shDropT >= 2) shDropT = -1; }
+  shDraw();
+  mn.style.transform = `scale(${1 + .018 * shHov + .035 * shG}, ${1 + .035 * shHov - .06 * shG})`;
+  const busy = shHot || shHov > .002 || shDropT >= 0 || Math.abs(shG) > .001 || Math.abs(shGv) > .01;
+  if (busy || mn.dataset.s === "shelf") shRaf = requestAnimationFrame(shFrame);
+  else { shRaf = 0; mn.style.transform = ""; }
+}
+function shRun() { if (!shRaf) { shLast = performance.now(); shRaf = requestAnimationFrame(shFrame); } }
+function shSetHot(on) { shHot = on; shRun(); }
+function shDropNow() { shHot = false; shDx = shCx; shDropT = 0; shGv = 7.7; shRun(); }
+function shStop() { shHot = false; shHov = 0; shHv = 0; shDropT = -1; shG = 0; shGv = 0; shDraw(); mn.style.transform = ""; }
 
 show("pet");
 
