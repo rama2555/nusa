@@ -56,17 +56,6 @@ a { color: inherit; }
 .bar nav a { text-decoration: none; color: var(--mist); }
 .bar nav a:hover { color: var(--ink); }
 
-.mascot {
-  position: absolute; top: env(safe-area-inset-top, 0px); left: 50%; z-index: 6;
-  width: 195px; height: 39px; margin-left: -97.5px;
-  background: #000; border-radius: 0 0 18px 18px;
-  animation: drop 0.9s var(--spring) 0.2s both;
-}
-.mascot::before, .mascot::after { content: ""; position: absolute; top: 0; width: 13px; height: 13px; }
-.mascot::before { left: -13px; background: radial-gradient(circle at 0 100%, transparent 12.5px, #000 13px); }
-.mascot::after { right: -13px; background: radial-gradient(circle at 100% 100%, transparent 12.5px, #000 13px); }
-.mascot .ambient { border-radius: inherit; }
-@keyframes drop { from { transform: translateY(-110%); } to { transform: none; } }
 
 .ambient {
   position: absolute; inset: auto 0 0 0; height: 90%; pointer-events: none;
@@ -80,7 +69,6 @@ a { color: inherit; }
   box-shadow: 0 0 6px 1px rgba(120,190,255,.6), 0 0 14px 4px rgba(80,140,255,.28);
   animation: blink 4.2s infinite;
 }
-.mascot .eyes { gap: 26px; } .mascot .eye { width: 11px; height: 16px; }
 @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
 
 /* ===== Hero ======================================================================= */
@@ -625,8 +613,6 @@ footer a:hover { color: var(--ink); }
   </div>
 </header>
 
-<!-- Maskot di tepi atas halaman: hanya mata yang berkedip -->
-<div class="mascot" aria-hidden="true"><div class="ambient"></div><div class="eyes"><i class="eye"></i><i class="eye"></i></div></div>
 
 <main id="top">
   <div class="wrap hero">
